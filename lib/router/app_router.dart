@@ -9,6 +9,7 @@ import '../features/accounting/presentation/gst_bills_page.dart';
 import '../features/accounting/presentation/incoming_payments_page.dart';
 import '../features/accounting/presentation/invoices_page.dart';
 import '../features/admin/presentation/admin_page.dart';
+import '../features/admin/company_profile/presentation/company_profile_page.dart';
 import '../features/common/presentation/module_placeholder_page.dart';
 import '../features/events/presentation/events_page.dart';
 import '../features/dashboard/presentation/dashboard_layout_wrapper.dart';
@@ -153,12 +154,7 @@ class AppRouter {
         );
 
       case RouteNames.companyProfile:
-        return MaterialPageRoute(
-          builder: (_) => const ModulePlaceholderPage(
-            title: 'Company Profile',
-            subtitle: 'Company profile module placeholder page',
-          ),
-        );
+        return MaterialPageRoute(builder: (_) => const CompanyProfilePage());
 
       // --- REPLACED PLACEHOLDER WITH REAL PAGE ---
       case RouteNames.bankProfile:

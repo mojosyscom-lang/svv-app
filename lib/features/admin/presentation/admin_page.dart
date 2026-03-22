@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/route_names.dart';
+import '../company_profile/data/company_profile_service.dart';
 
 class AdminPage extends StatelessWidget {
   const AdminPage({super.key});
@@ -57,61 +58,60 @@ class AdminPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const totalModules = 5;
-    const realPages = 0;
-    const pendingPages = 5;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin'),
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {},
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            const Text(
-              'Admin Overview',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                _summaryCard(
-                  title: 'Modules',
-                  value: '$totalModules',
-                  icon: Icons.dashboard_customize_outlined,
-                ),
-                const SizedBox(width: 12),
-                _summaryCard(
-                  title: 'Live Pages',
-                  value: '$realPages',
-                  icon: Icons.check_circle_outline,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _summaryCard(
-                  title: 'Pending',
-                  value: '$pendingPages',
-                  icon: Icons.pending_actions_outlined,
-                ),
-                const SizedBox(width: 12),
-                _summaryCard(
-                  title: 'Group',
-                  value: 'Admin',
-                  icon: Icons.admin_panel_settings_outlined,
-                ),
-              ],
-            ),
-            const SizedBox(height: 18),
-            const Text(
-              'Admin Modules',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 12),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: CompanyProfileService().fetchAdminOverview(),
+        builder: (context, snapshot) {
+          final overview = snapshot.data ?? const <String, dynamic>{};
+
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              const Text(
+                'Admin Overview',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  _summaryCard(
+                    title: 'Company',
+                    value: (overview['companyName'] ?? 'Loading...').toString(),
+                    icon: Icons.business_outlined,
+                  ),
+                  const SizedBox(width: 12),
+                  _summaryCard(
+                    title: 'GSTIN',
+                    value: (overview['gstinStatus'] ?? 'Loading...').toString(),
+                    icon: Icons.receipt_long_outlined,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _summaryCard(
+                    title: 'Logo',
+                    value: (overview['logoStatus'] ?? 'Loading...').toString(),
+                    icon: Icons.image_outlined,
+                  ),
+                  const SizedBox(width: 12),
+                  _summaryCard(
+                    title: 'Edit Access',
+                    value: (overview['editAccess'] ?? 'Loading...').toString(),
+                    icon: Icons.admin_panel_settings_outlined,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              const Text(
+                'Admin Modules',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 12),
             _sectionTile(
               icon: Icons.group_outlined,
               title: 'Users',
@@ -143,7 +143,8 @@ class AdminPage extends StatelessWidget {
               onTap: () => Navigator.pushNamed(context, RouteNames.settings),
             ),
           ],
-        ),
+          );
+        },
       ),
     );
   }

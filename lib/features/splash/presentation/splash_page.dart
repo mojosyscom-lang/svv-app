@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../core/constants/route_names.dart';
+import '../../admin/company_profile/data/company_profile_service.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -12,6 +13,9 @@ class SplashPage extends StatefulWidget {
 
 class _SplashPageState extends State<SplashPage>
     with TickerProviderStateMixin {
+
+        final CompanyProfileService _companyProfileService = CompanyProfileService();
+  String? _logoUrl;
 
   late AnimationController logoController;
   late AnimationController glowController;
@@ -33,6 +37,7 @@ class _SplashPageState extends State<SplashPage>
   @override
   void initState() {
     super.initState();
+        _loadSplashLogo();
 
     // --- LOGO ---
     logoController = AnimationController(
@@ -124,6 +129,19 @@ class _SplashPageState extends State<SplashPage>
     });
   }
 
+  Future<void> _loadSplashLogo() async {
+    try {
+      final logoUrl = await _companyProfileService.fetchSplashLogoUrl();
+      if (!mounted) return;
+      setState(() {
+        _logoUrl = logoUrl;
+      });
+    } catch (_) {
+      // keep default fallback logo
+    }
+  }
+
+
   @override
   void dispose() {
     logoController.dispose();
@@ -201,10 +219,21 @@ class _SplashPageState extends State<SplashPage>
                       scale: logoScale.value,
                       child: Opacity(
                         opacity: logoOpacity.value,
-                        child: Image.asset(
-                          "assets/images/logo_svv1.png",
-                          width: size,
-                        ),
+                        child: _logoUrl != null && _logoUrl!.trim().isNotEmpty
+                            ? Image.network(
+                                _logoUrl!,
+                                width: size,
+                                errorBuilder: (_, __, ___) {
+                                  return Image.asset(
+                                    "assets/images/logo_svv1.png",
+                                    width: size,
+                                  );
+                                },
+                              )
+                            : Image.asset(
+                                "assets/images/logo_svv1.png",
+                                width: size,
+                              ),
                       ),
                     ),
                   ],
