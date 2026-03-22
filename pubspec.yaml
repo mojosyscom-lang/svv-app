@@ -41,6 +41,8 @@ dependencies:
   equatable: ^2.0.5
   flutter_dotenv: ^5.1.0
   shared_preferences: ^2.2.3
+  flutter_svg: ^2.0.10+1  # For high-quality golden icons
+  google_fonts: ^6.2.1    # To match the premium typography
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
@@ -68,6 +70,52 @@ flutter:
 
   assets:
     - assets/images/logo_svv1.png
+    - assets/images/full-app-bg.png
+    - assets/images/dashboard-txt.png
+    - assets/images/svv-logo-dashboard.png
+    - assets/images/account-balance.png
+    - assets/images/total-income.png
+    - assets/images/salary.png
+    - assets/images/expense-icon.png
+    - assets/images/gst-net-icon.png
+    - assets/images/tds-net-icon.png
+    - assets/images/extra-icon.png    
+    - assets/images/total-advance-paid-icon.png
+
+    - assets/images/menu-icons-bg.png
+    - assets/images/module-star.png
+    - assets/images/modules-icons-payroll.png
+    - assets/images/modules-icons-admin.png
+    - assets/images/modules-icons-logout.png
+    - assets/images/modules-icons-events.png
+    - assets/images/modules-icons-accounting.png
+    - assets/images/modules-icons-settings.png
+        
+    - assets/images/modules-icons-advance.png
+    - assets/images/modules-icons-expenses.png
+    - assets/images/modules-icons-salary.png
+    - assets/images/modules-icons-holidays.png
+    - assets/images/modules-icons-gst-bills.png
+    - assets/images/modules-icons-quotation-invoices.png
+    - assets/images/modules-icons-inventory.png
+    - assets/images/modules-icons-letterpad.png
+    - assets/images/modules-icons-orders.png
+    - assets/images/modules-icons-clients.png
+    - assets/images/modules-icons-incomes.png
+    - assets/images/modules-icons-workers.png
+    - assets/images/modules-icons-password-reset.png
+    - assets/images/modules-icons-users.png
+    - assets/images/modules-icons-new-users.png
+    - assets/images/modules-icons-edit-passwords.png
+    - assets/images/modules-icons-company-profile.png
+    - assets/images/modules-icons-bank-profile.png
+    - assets/images/modules-icons-inventory-master.png
+    - assets/images/modules-icons-gst.png
+    - assets/images/modules-icons-reports.png
+    - assets/images/modules-icons-exports.png
+    - assets/images/modules-icons-superadmin.png
+    
+    
 
   # To add assets to your application, add an assets section, like this:
   # assets:

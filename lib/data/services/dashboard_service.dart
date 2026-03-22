@@ -43,7 +43,7 @@ class DashboardService {
     final results = await Future.wait([
       _client
           .from('incoming_payments')
-          .select('received_amount, tds_amount, payment_date')
+          .select('received_amount, tds_amount, payment_date, status')
           .eq('company_id', companyId),
       _client
           .from('expenses')
@@ -79,7 +79,8 @@ class DashboardService {
     double tdsCreditYear = 0;
 
     for (final row in incomeRows) {
- 
+      if ((row['status'] ?? 'ACTIVE').toString() != 'ACTIVE') continue;
+
       final amount = _toDouble(row['received_amount']);
       final tds = _toDouble(row['tds_amount']);
       final dt = _toDate(row['payment_date']);
@@ -100,7 +101,6 @@ class DashboardService {
     double tdsDebitYear = 0;
 
     for (final row in expenseRows) {
-      if ((row['status'] ?? 'ACTIVE').toString() != 'ACTIVE') continue;
       final amount = _toDouble(row['amount']);
       final tds = _toDouble(row['tds_amount']);
       final dt = _toDate(row['entry_date']);
@@ -181,7 +181,7 @@ class DashboardService {
       'monthKey': _monthKey(now),
       'year': now.year,
       'accountBalance': accountBalance,
-      'totalIncome': incomeMonth,
+      'totalIncome': incomeAll,
       'salary': salaryMonth,
       'expense': expenseMonth,
       'advance': advanceMonth,

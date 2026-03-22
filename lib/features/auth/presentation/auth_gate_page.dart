@@ -39,6 +39,34 @@ class _AuthGatePageState extends State<AuthGatePage> {
       return;
     }
 
+    final profileStatus = (profile['status'] ?? 'INACTIVE').toString();
+    if (profileStatus != 'ACTIVE') {
+      await _authService.signOut();
+      if (!mounted) return;
+      _go(RouteNames.login);
+      return;
+    }
+
+    final companyId = (profile['company_id'] ?? '').toString();
+    if (companyId.isEmpty) {
+      await _authService.signOut();
+      if (!mounted) return;
+      _go(RouteNames.login);
+      return;
+    }
+
+    final company = await _authService.getCompanyById(companyId);
+
+    if (!mounted) return;
+
+    final companyActive = company?['is_active'] == true;
+    if (!companyActive) {
+      await _authService.signOut();
+      if (!mounted) return;
+      _go(RouteNames.login);
+      return;
+    }
+
     final role = (profile['role'] ?? '').toString();
 
     if (role == 'staff') {

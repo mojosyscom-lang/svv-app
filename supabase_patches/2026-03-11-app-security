@@ -1,0 +1,241 @@
+----------------------------------------------------
+-- SVV APP SECURITY FOUNDATION
+-- RLS + Helper Functions + Starter Policies
+----------------------------------------------------
+
+----------------------------------------------------
+-- HELPER FUNCTIONS
+----------------------------------------------------
+
+create or replace function current_company_id()
+returns uuid
+language sql
+stable
+as $$
+  select company_id
+  from profiles
+  where id = auth.uid();
+$$;
+
+create or replace function app_current_role()
+returns text
+language sql
+stable
+as $$
+  select role
+  from profiles
+  where id = auth.uid();
+$$;
+
+
+----------------------------------------------------
+-- ENABLE RLS ON CORE TABLES
+----------------------------------------------------
+
+alter table profiles enable row level security;
+
+alter table workers enable row level security;
+alter table worker_advances enable row level security;
+alter table expenses enable row level security;
+alter table salary_payments enable row level security;
+alter table worker_holidays enable row level security;
+alter table expense_types enable row level security;
+
+alter table clients enable row level security;
+alter table orders enable row level security;
+alter table inventory_items enable row level security;
+alter table order_items enable row level security;
+alter table inventory_transactions enable row level security;
+alter table letterpads enable row level security;
+
+alter table invoices enable row level security;
+alter table invoice_items enable row level security;
+alter table incoming_payments enable row level security;
+alter table gst_bills enable row level security;
+
+alter table notifications enable row level security;
+alter table notification_reads enable row level security;
+alter table push_tokens enable row level security;
+
+alter table activity_logs enable row level security;
+
+
+----------------------------------------------------
+-- BASIC COMPANY ISOLATION POLICY
+----------------------------------------------------
+
+create policy "company isolation read"
+on workers
+for select
+using (company_id = current_company_id());
+
+create policy "company isolation read"
+on clients
+for select
+using (company_id = current_company_id());
+
+create policy "company isolation read"
+on orders
+for select
+using (company_id = current_company_id());
+
+create policy "company isolation read"
+on invoices
+for select
+using (company_id = current_company_id());
+
+create policy "company isolation read"
+on expenses
+for select
+using (company_id = current_company_id());
+
+create policy "company isolation read"
+on worker_advances
+for select
+using (company_id = current_company_id());
+
+create policy "company isolation read"
+on salary_payments
+for select
+using (company_id = current_company_id());
+
+create policy "company isolation read"
+on inventory_transactions
+for select
+using (company_id = current_company_id());
+
+create policy "company isolation read"
+on incoming_payments
+for select
+using (company_id = current_company_id());
+
+
+----------------------------------------------------
+-- OWNER + SUPERADMIN WRITE ACCESS
+----------------------------------------------------
+
+create policy "owner write workers"
+on workers
+for all
+using (
+  company_id = current_company_id()
+  and app_current_role() in ('owner','superadmin')
+)
+with check (
+  company_id = current_company_id()
+);
+
+create policy "owner write clients"
+on clients
+for all
+using (
+  company_id = current_company_id()
+  and app_current_role() in ('owner','superadmin')
+)
+with check (
+  company_id = current_company_id()
+);
+
+create policy "owner write orders"
+on orders
+for all
+using (
+  company_id = current_company_id()
+  and app_current_role() in ('owner','superadmin')
+)
+with check (
+  company_id = current_company_id()
+);
+
+create policy "owner write expenses"
+on expenses
+for all
+using (
+  company_id = current_company_id()
+  and app_current_role() in ('owner','superadmin')
+)
+with check (
+  company_id = current_company_id()
+);
+
+create policy "owner write advances"
+on worker_advances
+for all
+using (
+  company_id = current_company_id()
+  and app_current_role() in ('owner','superadmin')
+)
+with check (
+  company_id = current_company_id()
+);
+
+create policy "owner write salary"
+on salary_payments
+for all
+using (
+  company_id = current_company_id()
+  and app_current_role() in ('owner','superadmin')
+)
+with check (
+  company_id = current_company_id()
+);
+
+
+----------------------------------------------------
+-- STAFF INVENTORY ACCESS
+----------------------------------------------------
+
+create policy "staff inventory read"
+on inventory_transactions
+for select
+using (
+  company_id = current_company_id()
+);
+
+create policy "staff inventory insert"
+on inventory_transactions
+for insert
+with check (
+  company_id = current_company_id()
+);
+
+
+----------------------------------------------------
+-- NOTIFICATIONS ACCESS
+----------------------------------------------------
+
+create policy "read notifications"
+on notifications
+for select
+using (
+  company_id = current_company_id()
+);
+
+create policy "read notification_reads"
+on notification_reads
+for select
+using (
+  user_id = auth.uid()
+);
+
+create policy "insert notification_reads"
+on notification_reads
+for insert
+with check (
+  user_id = auth.uid()
+);
+
+
+----------------------------------------------------
+-- PUSH TOKEN POLICY
+----------------------------------------------------
+
+create policy "user manage own push token"
+on push_tokens
+for all
+using (
+  user_id = auth.uid()
+)
+with check (
+  user_id = auth.uid()
+);

@@ -32,4 +32,15 @@ class AuthService {
     if (data == null) return null;
     return Map<String, dynamic>.from(data);
   }
+
+  Future<Map<String, dynamic>?> getCompanyById(String companyId) async {
+    final data = await _client
+        .from('companies')
+        .select()
+        .eq('id', companyId)
+        .maybeSingle();
+
+    if (data == null) return null;
+    return Map<String, dynamic>.from(data);
+  }
 }
