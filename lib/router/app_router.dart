@@ -17,7 +17,12 @@ import '../features/events/inventory_txn/presentation/inventory_txn_page.dart';
 import '../features/payroll/worker_advances/presentation/worker_advances_page.dart';
 import '../features/payroll/workers/presentation/workers_page.dart';
 import '../features/payroll/presentation/payroll_page.dart';
+import '../features/settings/presentation/my_password_page.dart';
 import '../features/splash/presentation/splash_page.dart';
+import '../features/superadmin/presentation/superadmin_page.dart';
+import '../features/superadmin/users/presentation/edit_passwords_page.dart';
+import '../features/superadmin/users/presentation/new_user_page.dart';
+import '../features/superadmin/users/presentation/users_page.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -74,12 +79,7 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const AdminPage());
 
       case RouteNames.superadmin:
-        return MaterialPageRoute(
-          builder: (_) => const ModulePlaceholderPage(
-            title: 'Superadmin',
-            subtitle: 'Superadmin module placeholder page',
-          ),
-        );
+        return MaterialPageRoute(builder: (_) => const SuperadminPage());
 
       case RouteNames.advances:
         return MaterialPageRoute(builder: (_) => const WorkerAdvancesPage());
@@ -146,12 +146,7 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const WorkersPage());
 
       case RouteNames.passwordReset:
-        return MaterialPageRoute(
-          builder: (_) => const ModulePlaceholderPage(
-            title: 'Password Reset',
-            subtitle: 'Password reset module placeholder page',
-          ),
-        );
+        return MaterialPageRoute(builder: (_) => const MyPasswordPage());
 
       case RouteNames.companyProfile:
         return MaterialPageRoute(builder: (_) => const CompanyProfilePage());
@@ -193,28 +188,13 @@ class AppRouter {
         );
 
       case RouteNames.users:
-        return MaterialPageRoute(
-          builder: (_) => const ModulePlaceholderPage(
-            title: 'Users',
-            subtitle: 'Users module placeholder page',
-          ),
-        );
+        return MaterialPageRoute(builder: (_) => const UsersPage());
 
       case RouteNames.newUsers:
-        return MaterialPageRoute(
-          builder: (_) => const ModulePlaceholderPage(
-            title: 'New Users',
-            subtitle: 'New users module placeholder page',
-          ),
-        );
+        return MaterialPageRoute(builder: (_) => const NewUserPage());
 
       case RouteNames.editPasswords:
-        return MaterialPageRoute(
-          builder: (_) => const ModulePlaceholderPage(
-            title: 'Edit Passwords',
-            subtitle: 'Edit passwords module placeholder page',
-          ),
-        );
+        return MaterialPageRoute(builder: (_) => const EditPasswordsPage());
 
       default:
         return MaterialPageRoute(
