@@ -199,7 +199,12 @@ class _EditPasswordsPageState extends State<EditPasswordsPage> {
                     title: Text(
                       displayName.isEmpty ? username : displayName,
                     ),
-                    subtitle: Text('Username: $username\nRole: $role\nStatus: $status'),
+                    subtitle: Text(
+  'Username: $username\n'
+  'Email: ${user['email'] ?? ''}\n'
+  'Role: $role\n'
+  'Status: $status',
+),
                     isThreeLine: true,
                     trailing: OutlinedButton(
                       onPressed: () => _resetPassword(user),

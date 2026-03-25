@@ -169,9 +169,14 @@ class _UsersPageState extends State<UsersPage> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text('Username: $username'),
-                        const SizedBox(height: 4),
-                        Text('Role: $role'),
+Text('Username: $username'),
+const SizedBox(height: 2),
+Text(
+  'Email: ${user['email'] ?? ''}',
+  style: const TextStyle(fontSize: 12, color: Colors.grey),
+),
+const SizedBox(height: 4),
+Text('Role: $role'),
                         const SizedBox(height: 8),
                         Row(
                           children: [
