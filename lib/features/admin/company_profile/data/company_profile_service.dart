@@ -29,13 +29,22 @@ class CompanyProfileService {
     return {
       'profile': profile,
       'role': role,
-      'canEdit': role == 'owner' || role == 'superadmin',
+      'canView': role == 'owner' || role == 'superadmin',
+      'canEdit': role == 'superadmin',
       'isSuperadmin': role == 'superadmin',
+      'isOwner': role == 'owner',
+      'isStaff': role == 'staff',
     };
   }
 
   Future<Map<String, dynamic>> fetchCompanyProfile() async {
-    final profile = await _requireMyProfile();
+    final access = await getMyAccess();
+    final profile = Map<String, dynamic>.from(access['profile'] as Map);
+
+    if (access['canView'] != true) {
+      throw Exception('You are not allowed to view company profile.');
+    }
+
     final companyId = (profile['company_id'] ?? '').toString();
 
     if (companyId.isEmpty) {
@@ -82,7 +91,7 @@ class CompanyProfileService {
       'companyName': companyName.isEmpty ? 'Not Saved' : companyName,
       'gstinStatus': gstin.isEmpty ? 'Missing' : 'Saved',
       'logoStatus': logoUrl.isEmpty ? 'Missing' : 'Saved',
-      'editAccess': access['canEdit'] == true ? 'Allowed' : 'Read Only',
+      'editAccess': access['canEdit'] == true ? 'Superadmin' : 'Read Only',
     };
   }
 

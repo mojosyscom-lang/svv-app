@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data/company_asset_storage_service.dart';
 import '../data/company_profile_service.dart';
 
 class CompanyProfilePage extends StatefulWidget {
@@ -10,8 +11,15 @@ class CompanyProfilePage extends StatefulWidget {
 
 class _CompanyProfilePageState extends State<CompanyProfilePage> {
   final CompanyProfileService _service = CompanyProfileService();
+  final CompanyAssetStorageService _assetStorageService =
+      CompanyAssetStorageService();
 
   late Future<void> _loadFuture;
+
+  String? _companyId;
+  bool _isUploadingLogo = false;
+  bool _isUploadingBankQr = false;
+  bool _isUploadingPrintBg = false;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -29,6 +37,7 @@ class _CompanyProfilePageState extends State<CompanyProfilePage> {
   final _bankQrUrlController = TextEditingController();
   final _printBgUrlController = TextEditingController();
 
+  bool _canView = false;
   bool _canEdit = false;
   bool _isSaving = false;
 
@@ -42,7 +51,9 @@ class _CompanyProfilePageState extends State<CompanyProfilePage> {
     final access = await _service.getMyAccess();
     final profile = await _service.fetchCompanyProfile();
 
+    _canView = access['canView'] == true;
     _canEdit = access['canEdit'] == true;
+    _companyId = (profile['company_id'] ?? '').toString().trim();
 
     _companyNameController.text = (profile['company_name'] ?? '').toString();
     _shortDescController.text = (profile['short_desc'] ?? '').toString();
@@ -109,6 +120,127 @@ class _CompanyProfilePageState extends State<CompanyProfilePage> {
       }
     }
   }
+
+  Future<void> _uploadAsset({
+    required String assetType,
+    required TextEditingController controller,
+    required List<String> allowedExtensions,
+    required void Function(bool value) setUploading,
+  }) async {
+    if (!_canEdit) return;
+
+    final companyId = (_companyId ?? '').trim();
+    if (companyId.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Company ID not found. Please reload page.')),
+      );
+      return;
+    }
+
+    setState(() {
+      setUploading(true);
+    });
+
+    try {
+      final publicUrl = await _assetStorageService.pickAndUploadAsset(
+        companyId: companyId,
+        assetType: assetType,
+        oldPublicUrl: controller.text,
+        allowedExtensions: allowedExtensions,
+      );
+
+      if (publicUrl == null || publicUrl.trim().isEmpty) {
+        return;
+      }
+
+      controller.text = publicUrl;
+
+      if (!mounted) return;
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Asset uploaded successfully')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          setUploading(false);
+        });
+      }
+    }
+  }
+
+  Widget _imagePreview({
+    required String label,
+    required TextEditingController controller,
+    double height = 120,
+  }) {
+    final url = controller.text.trim();
+    if (url.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Text('$label preview: no file selected'),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('$label preview'),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: double.infinity,
+              height: height,
+              color: Colors.black12,
+              child: Image.network(
+                url,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) {
+                  return const Center(
+                    child: Text('Preview unavailable'),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _uploadButton({
+    required String label,
+    required bool isUploading,
+    required VoidCallback? onPressed,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: isUploading ? null : onPressed,
+          icon: isUploading
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.upload_file),
+          label: Text(isUploading ? 'Uploading...' : label),
+        ),
+      ),
+    );
+  }
+
 
   Widget _field({
     required TextEditingController controller,
@@ -179,6 +311,15 @@ class _CompanyProfilePageState extends State<CompanyProfilePage> {
             );
           }
 
+          if (!_canView) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Text('You are not allowed to view Company Profile.'),
+              ),
+            );
+          }
+
           return RefreshIndicator(
             onRefresh: _reload,
             child: ListView(
@@ -202,8 +343,8 @@ class _CompanyProfilePageState extends State<CompanyProfilePage> {
                           const SizedBox(height: 8),
                           Text(
                             _canEdit
-                                ? 'Editable for owner and superadmin'
-                                : 'Read-only for your role',
+                                ? 'Editable only for superadmin'
+                                : 'Read-only access',
                           ),
                           const SizedBox(height: 16),
                           _field(
@@ -264,15 +405,89 @@ class _CompanyProfilePageState extends State<CompanyProfilePage> {
                             label: 'Logo URL',
                             maxLines: 3,
                           ),
+                          _uploadButton(
+                            label: 'Upload Logo',
+                            isUploading: _isUploadingLogo,
+                            onPressed: _canEdit
+                                ? () => _uploadAsset(
+                                      assetType: 'logo',
+                                      controller: _logoUrlController,
+                                      allowedExtensions: const [
+                                        'png',
+                                        'jpg',
+                                        'jpeg',
+                                        'webp',
+                                        'svg',
+                                      ],
+                                      setUploading: (value) {
+                                        _isUploadingLogo = value;
+                                      },
+                                    )
+                                : null,
+                          ),
+                          _imagePreview(
+                            label: 'Logo',
+                            controller: _logoUrlController,
+                            height: 120,
+                          ),
                           _field(
                             controller: _bankQrUrlController,
                             label: 'Bank QR Code URL',
                             maxLines: 3,
                           ),
+                          _uploadButton(
+                            label: 'Upload Bank QR',
+                            isUploading: _isUploadingBankQr,
+                            onPressed: _canEdit
+                                ? () => _uploadAsset(
+                                      assetType: 'bank_qr',
+                                      controller: _bankQrUrlController,
+                                      allowedExtensions: const [
+                                        'png',
+                                        'jpg',
+                                        'jpeg',
+                                        'webp',
+                                        'svg',
+                                      ],
+                                      setUploading: (value) {
+                                        _isUploadingBankQr = value;
+                                      },
+                                    )
+                                : null,
+                          ),
+                          _imagePreview(
+                            label: 'Bank QR',
+                            controller: _bankQrUrlController,
+                            height: 160,
+                          ),
                           _field(
                             controller: _printBgUrlController,
                             label: 'Print Background URL',
                             maxLines: 3,
+                          ),
+                          _uploadButton(
+                            label: 'Upload Print Background',
+                            isUploading: _isUploadingPrintBg,
+                            onPressed: _canEdit
+                                ? () => _uploadAsset(
+                                      assetType: 'print_bg',
+                                      controller: _printBgUrlController,
+                                      allowedExtensions: const [
+                                        'png',
+                                        'jpg',
+                                        'jpeg',
+                                        'webp',
+                                      ],
+                                      setUploading: (value) {
+                                        _isUploadingPrintBg = value;
+                                      },
+                                    )
+                                : null,
+                          ),
+                          _imagePreview(
+                            label: 'Print Background',
+                            controller: _printBgUrlController,
+                            height: 140,
                           ),
                           const SizedBox(height: 8),
                           SizedBox(

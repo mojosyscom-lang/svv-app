@@ -1,0 +1,13 @@
+project_id = "mvlebtgqacyqzacwqhyb"
+
+[functions.admin-list-users]
+verify_jwt = false
+
+[functions.admin-create-user]
+verify_jwt = false
+
+[functions.admin-update-user-password]
+verify_jwt = false
+
+[functions.admin-update-user-status]
+verify_jwt = false

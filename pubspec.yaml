@@ -44,6 +44,7 @@ dependencies:
   flutter_svg: ^2.0.10+1  # For high-quality golden icons
   google_fonts: ^6.2.1    # To match the premium typography
   cupertino_icons: ^1.0.8
+  file_picker: ^10.3.10
 
 dev_dependencies:
   flutter_test:
